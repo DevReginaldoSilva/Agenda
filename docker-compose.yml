@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"  # Mapear a porta 5000 do container para a porta 5000 do host
+    environment:
+      - DB_HOST=db  # O nome do serviço para o banco de dados
+      - DB_USER=user
+      - DB_PASS=password
+      - DB_NAME=agendamento_db
+    depends_on:
+      - db  # Garante que o banco de dados será iniciado antes do backend
+    networks:
+      - app-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"  # Mapear a porta 3000 do container para a porta 3000 do host
+    depends_on:
+      - backend  # O backend precisa estar rodando para o frontend funcionar corretamente
+    networks:
+      - app-network
+
+  db:
+    image: postgres:latest  # Usando a imagem oficial do PostgreSQL
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=agendamento_db
+    ports:
+      - "5432:5432"  # Expor a porta do banco de dados
+    volumes:
+      - db-data:/var/lib/postgresql/data  # Persistir os dados do banco
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge  # Rede para comunicação entre backend, frontend e banco de dados
+
+volumes:
+  db-data:  # Volume para o banco de dados
